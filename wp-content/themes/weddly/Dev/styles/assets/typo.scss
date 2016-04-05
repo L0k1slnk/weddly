@@ -1,0 +1,21 @@
+html{
+  font-family: Verdana, san-serif, serif;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+@for $i from 1 through 6 {
+  h#{$i}{
+    font-family: 'Helvetica Narrow', 'Arial Narrow', Helvetica, Arial, san-serif;
+    color: $c_serenity;
+    font-weight: 300;
+  }
+}
+
+a{
+  color: $c_serenity;
+  text-decoration: underline;
+  &:hover{
+    text-decoration: none;
+  }
+}

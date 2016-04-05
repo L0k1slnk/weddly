@@ -195,6 +195,18 @@ msgstr "Логови/Историја"
 msgid "Choose your general options"
 msgstr "Изабери општа подешавања"
 
+msgid "Multi-Author :"
+msgstr "Мулти-Аутор :"
+
+msgid "Enable Multi-Author Mode :"
+msgstr "Укључи Мулти-Аутор Режим :"
+
+msgid "Who can create personal accounts and auto publish :"
+msgstr "Коме је дозвољено додавање налога и ауто публикација :"
+
+msgid "Who can auto publish :"
+msgstr "Коме је дозвољена ауто публикација :"
+
 #: microblogposter_options.php:1375
 msgid "Url Shortener"
 msgstr "Урл Скраћивач"
@@ -459,6 +471,12 @@ msgstr "дужина:"
 #: microblogposter_options.php:1718
 msgid "(Used when auto generated)"
 msgstr "(користи се када ауто направљен)"
+
+msgid "Apply filters prior to auto publishing :"
+msgstr "Филтрирај пре публикације :"
+
+msgid "Shortcodes filtered :"
+msgstr "Филтрирани кратки кодови :"
 
 #: microblogposter_options.php:1724
 msgid "Pro / Enterprise Add-on Section:"
@@ -1452,10 +1470,10 @@ msgstr ""
 
 #. Description of the plugin/theme
 msgid ""
-"Automatically publishes your new blog content to Social Networks. Auto-"
-"updates Twitter, Facebook, Linkedin, Plurk, Diigo, Delicious.."
+"Automatically publishes your new and old blog content to Social Networks. "
+"Auto posts to Twitter, Facebook, Linkedin, Tumblr, Blogger, Xing.."
 msgstr "Аутоматски публикуј нови и стари садржај блога на друштвене мреже. "
-"Аутоматски ажурирај Twitter, Facebook, Linkedin, Plurk, Diigo, Delicious.."
+"Аутоматски ажурирај Twitter, Facebook, Linkedin, Tumblr, Blogger, Xing.."
 
 #. Author of the plugin/theme
 msgid "Efficient Scripts"

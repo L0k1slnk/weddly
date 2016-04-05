@@ -196,6 +196,18 @@ msgstr "Logs/Cronologia"
 msgid "Choose your general options"
 msgstr "Scegli le impostazioni generali"
 
+msgid "Multi-Author :"
+msgstr "Multi-Autore :"
+
+msgid "Enable Multi-Author Mode :"
+msgstr "Attiva Multi-Autore modalità :"
+
+msgid "Who can create personal accounts and auto publish :"
+msgstr "Chi può creare account personali e autopubblicare :"
+
+msgid "Who can auto publish :"
+msgstr "Chi può autopubblicare :"
+
 #: microblogposter_options.php:1375
 msgid "Url Shortener"
 msgstr "Abbreviatore di Url"
@@ -461,6 +473,12 @@ msgstr "lunghezza:"
 #: microblogposter_options.php:1718
 msgid "(Used when auto generated)"
 msgstr "(Usato quando generato in automatico)"
+
+msgid "Apply filters prior to auto publishing :"
+msgstr "Applicare filtri prima della pubblicazione automatica :"
+
+msgid "Shortcodes filtered :"
+msgstr "Codici brevi filtrati :"
 
 #: microblogposter_options.php:1724
 msgid "Pro / Enterprise Add-on Section:"
@@ -1484,11 +1502,11 @@ msgstr ""
 
 #. Description of the plugin/theme
 msgid ""
-"Automatically publishes your new blog content to Social Networks. Auto-"
-"updates Twitter, Facebook, Linkedin, Plurk, Diigo, Delicious.."
+"Automatically publishes your new and old blog content to Social Networks. "
+"Auto posts to Twitter, Facebook, Linkedin, Tumblr, Blogger, Xing.."
 msgstr ""
-"Pubblica automaticamente i nuovi contenuti del vostro blog sui Social Network. "
-"Aggiorna in automatico Twitter, Facebook, Linkedin, Plurk, Diigo, Delicious."
+"Pubblica automaticamente il vostro vecchi e nuovi contenuti del vostro blog sui Social Network. "
+"Aggiorna in automatico Twitter, Facebook, Linkedin, Tumblr, Blogger, Xing.."
 
 #. Author of the plugin/theme
 msgid "Efficient Scripts"

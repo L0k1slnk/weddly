@@ -10,6 +10,7 @@
 # if you remove the above rule, at least ignore the following:
 
 # User-specific stuff:
+/wp-content/themes/weddly/node_modules
 # .idea/workspace.xml
 # .idea/tasks.xml
 # .idea/dictionaries

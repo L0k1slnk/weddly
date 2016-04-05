@@ -197,6 +197,18 @@ msgstr "Registros/Historial"
 msgid "Choose your general options"
 msgstr "Elija sus opciones generales"
 
+msgid "Multi-Author :"
+msgstr "Multi-Autor :"
+
+msgid "Enable Multi-Author Mode :"
+msgstr "Activar Multi-Autor Modo :"
+
+msgid "Who can create personal accounts and auto publish :"
+msgstr "Quién puede crear cuentas personales y auto publicar :"
+
+msgid "Who can auto publish :"
+msgstr "Quién puede auto publicar :"
+
 #: microblogposter_options.php:1375
 msgid "Url Shortener"
 msgstr "Reductor de Url"
@@ -465,6 +477,12 @@ msgstr "longitud:"
 #: microblogposter_options.php:1718
 msgid "(Used when auto generated)"
 msgstr "(Usado cuando se auto genera)"
+
+msgid "Apply filters prior to auto publishing :"
+msgstr "Aplicar filtros antes de la publicación automática :"
+
+msgid "Shortcodes filtered :"
+msgstr "Shortcodes filtrados :"
 
 #: microblogposter_options.php:1724
 msgid "Pro / Enterprise Add-on Section:"
@@ -1211,7 +1229,7 @@ msgstr "La próxima ejecución ocurrirá después de aproximadamente x horas."
 
 #: microblogposter_options.php:4489
 msgid "Activate old posts auto publishing :"
-msgstr "Active auto publicación de entradas antiguas :"
+msgstr "Activar auto publicación de entradas antiguas :"
 
 #: microblogposter_options.php:4492
 msgid "Current Status :"
@@ -1467,10 +1485,10 @@ msgstr ""
 
 #. Description of the plugin/theme
 msgid ""
-"Automatically publishes your new blog content to Social Networks. Auto-"
-"updates Twitter, Facebook, Linkedin, Plurk, Diigo, Delicious.."
-msgstr "Publica automáticamente el nuevo contenido de su blog en las Redes Sociales. Auto "
-"actualiza Twitter, Facebook, Linkedin, Plurk, Diigo, Delicious.."
+"Automatically publishes your new and old blog content to Social Networks. "
+"Auto posts to Twitter, Facebook, Linkedin, Tumblr, Blogger, Xing.."
+msgstr "Publica automáticamente el nuevo y antiguo contenido de su blog en las Redes Sociales. Auto "
+"actualiza Twitter, Facebook, Linkedin, Tumblr, Blogger, Xing.."
 
 #. Author of the plugin/theme
 msgid "Efficient Scripts"

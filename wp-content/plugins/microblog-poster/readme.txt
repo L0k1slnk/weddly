@@ -2,28 +2,32 @@
 Contributors: cybperic
 Tags: microblogging, bookmarking, bookmarks, auto posts, auto publish, social signals, cross-post, cross post, auto submit, auto update, social networks, social media, twitter, facebook, linkedin, tumblr, delicious, diigo, plurk, blogger, automatic, automation, links, backlinks, auto updates status, social media auto publish, social network auto publish, publish to twitter, publish to facebook
 Requires at least: 3.0
-Tested up to: 4.3
-Stable tag: 1.6.5
+Tested up to: 4.4
+Stable tag: 1.7.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Automatically publishes your new (and old) blog content to Social Networks. Auto-updates Twitter, Facebook, Linkedin, Tumblr, Blogger, Delicious..
+Automatically publishes your new and old blog content to Social Networks. Auto posts to Twitter, Facebook, Linkedin, Tumblr, Blogger, Xing..
 
 == Description ==
 
-**Auto publish to your social media accounts/profiles** on each new blog post with a formatted message with backlink.
-You only have to configure your social network accounts like Facebook, Twitter, LinkedIn, Tumblr. 
-**Multiple Accounts per social site supported.**
-Possibility to nicely format the update message per account, **shortcodes supported**.
+**Auto publish to your social media accounts** your new blog posts/pages/custom post types.
+You only have to configure your social network accounts like Facebook, Twitter, LinkedIn, Tumblr.. 
 
 **Auto re-publish old blog posts** to all your configured social accounts. 
-By auto sharing your old blog posts you keep them alive and increase traffic to your blog!
+By auto sharing your old blog posts, you keep them alive and increase traffic to your blog!
 
-**Logs are generated** on new blog post for each configured social network account.
+**Additionally Filter posts** to be published/cross posted to social networks based on categories. 
+(General section settings)
+
+**Multiple Accounts per social site supported.**
+Possibility to nicely format the posted message per account, **shortcodes supported**.
+
+**Logs are generated** each time there is an auto posting activity for each configured social network account.
 Easily follow the automated sharing process from **MicroblogPoster**'s logs section and debug your configuration if needed.
 
-**Custom Post Types** supported, additionally **Filter posts** to be published/cross posted to social networks based on categories. 
-(General section settings)
+**Wordpress Multisite fully compatible**. Rather than doing the 'Network activation', 
+activate MicroblogPoster for each sub blog.  
 
 Please visit **MicroblogPoster**'s [website](http://efficientscripts.com/microblogposter "MicroblogPoster's website") , or
 
@@ -38,19 +42,20 @@ Please visit **MicroblogPoster**'s [website](http://efficientscripts.com/microbl
 
 **Currently supported social media sites**
 
-* twitter.com - Auto tweet backlink of new blogpost.
+* twitter.com - Auto post to your account.
 * facebook.com - Auto publish to profile wall.
-* plurk.com - Auto post new plurk.
+* plurk.com - Auto post to your account.
 * delicious.com - Auto submit bookmark of your blogpost to your account.
-* diigo.com - Auto submit bookmark of your new blogpost.
+* diigo.com - Auto submit bookmark of your blogpost.
 * linkedin.com - Auto publish to profile wall
 * tumblr.com - Auto publish to your blog.
 * blogger.com (blogspot.com) - Auto publish to your blog.
-* instapaper.com - Auto submit bookmark of your new blogpost.
+* instapaper.com - Auto submit bookmark of your blogpost.
 * vk.com (vkontakte.com) - Auto publish to profile wall.
+* xing.com - Auto publish to profile wall.
 
 
-The idea behind **MicroblogPoster** is to promote your wordpress blog and reach more people through social networks like Facebook, Twitter, LinkedIn, Tumblr.. 
+The idea behind **MicroblogPoster** is to promote your wordpress blog and reach more people through social networks. 
 There's a general agreement in the SEO community that social signals strengthen your blog's page rank and authority.
 **MicroblogPoster** is simply an intermediary between your blog and your own social network accounts. You'll never
 see "posted by MicroblogPoster" in your updates, you'll see "posted by your own App name" or simply "by API".
@@ -65,7 +70,7 @@ see "posted by MicroblogPoster" in your updates, you'll see "posted by your own 
 - Cross post to facebook , twitter and more
 - Auto publish to facebook , tumblr
 - Auto share to twitter , facebook , linkedin
-- Auto post to social media networks
+- Auto post to social media networks, Auto tweet
 
 == Screenshots ==
 
@@ -92,6 +97,24 @@ see "posted by MicroblogPoster" in your updates, you'll see "posted by your own 
 11. MicroblogPoster Options page, Logs Section. (Part 2)
 
 == Changelog ==
+
+= 1.7.0 (29-03-2016) =
+- Adapted the free version of the plugin to work together with the new Ultimate Add-on.
+
+= 1.6.9 (29-02-2016) =
+- Added possibility to auto publish with image to tumblr.
+
+= 1.6.8 (28-01-2016) =
+- Possibility to apply_filters to blog content prior to auto publishing.
+- Improved vk.com auto posting.
+
+= 1.6.7 (18-12-2015) =
+- Delaying the call to functions in WPINC/pluggable.php since they can be replaced via plugins.
+
+= 1.6.6 (17-12-2015) =
+- Added 'Who can auto publish' setting.
+- Added russian translation.
+- Added ukrainian translation.
 
 = 1.6.5 (19-11-2015) =
 - Added deutsch translation.
@@ -475,9 +498,9 @@ Yes, otherwise the plugin simply won't function at all.
 
 = More General FAQs .. =
 
-[MicroblogPoster's FAQ](http://efficientscripts.com/support/microblogposter/faq "MicroblogPoster's General FAQ")
+[MicroblogPoster's FAQs](http://efficientscripts.com/support/microblogposter/faq "MicroblogPoster's General FAQ")
 
 = Auto Publish Old Posts FAQs .. =
 
-[MicroblogPoster's FAQ](http://efficientscripts.com/support/microblogposter/faqoldposts "Auto Publish Old Posts FAQs")
+[Auto Publish Old Posts FAQs](http://efficientscripts.com/support/microblogposter/faqoldposts "Auto Publish Old Posts FAQs")
 

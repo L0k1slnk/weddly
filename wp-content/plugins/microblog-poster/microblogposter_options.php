@@ -11,10 +11,17 @@ function microblogposter_admin_init()
 }
 
 function microblogposter_settings()
-{
-    
-    add_submenu_page('options-general.php', 'MicroblogPoster Options', 'MicroblogPoster', 'administrator', 'microblogposter.php', 'microblogposter_settings_output');
-    
+{   
+    $multi_author_mode_name = "microblogposter_plg_multi_author_mode";
+    $multi_author_mode_value = get_option($multi_author_mode_name, false);
+    if(current_user_can('manage_options'))
+    {
+        add_submenu_page('options-general.php', 'MicroblogPoster Options', 'MicroblogPoster', 'manage_options', 'microblogposter.php', 'microblogposter_settings_output');
+    }
+    elseif(current_user_can('microblogposter_who_can_auto_publish_ma') && $multi_author_mode_value)
+    {
+        add_submenu_page('options-general.php', 'MicroblogPoster Options', 'MicroblogPoster', 'microblogposter_who_can_auto_publish_ma', 'microblogposter.php', 'microblogposter_settings_output');
+    }
 }
 
 function microblogposter_settings_output()
@@ -23,6 +30,7 @@ function microblogposter_settings_output()
 
     $table_accounts = $wpdb->prefix . 'microblogposter_accounts';
     $table_logs = $wpdb->prefix . 'microblogposter_logs';
+    $table_user_accounts = $wpdb->prefix . 'microblogposter_user_accounts';
     
     //Options names
     $url_shortener_name = "microblogposter_plg_url_shortener";
@@ -47,7 +55,7 @@ function microblogposter_settings_output()
     $enabled_custom_types_name = "microblogposter_enabled_custom_types";
     $enabled_custom_updates_name = "microblogposter_enabled_custom_updates";
     $customer_license_key_name = "microblogposterpro_plg_customer_license_key";
-    $pro_control_dash_mode_name = "microblogposter_plg_control_dash_mode";
+    
     $shortcode_title_max_length_name = "microblogposter_plg_shortcode_title_max_length";
     $shortcode_firstwords_max_length_name = "microblogposter_plg_shortcode_firstwords_max_length";
     $shortcode_excerpt_max_length_name = "microblogposter_plg_shortcode_excerpt_max_length";
@@ -58,6 +66,13 @@ function microblogposter_settings_output()
     $microblogposter_plg_old_posts_interval_name = "microblogposter_plg_old_posts_interval";
     $microblogposter_plg_old_posts_expire_age_name = "microblogposter_plg_old_posts_expire_age";
     $excluded_categories_old_name = "microblogposter_excluded_categories_old";
+    $who_can_auto_publish_name = "microblogposter_who_can_auto_publish";
+    $apply_filters_before_publishing_name = "microblogposter_plg_apply_filters_before_publishing";
+    if(MicroblogPoster_Poster::is_method_callable('MicroblogPoster_Poster_Ultimate_Options','is_loaded'))
+    {
+        $multi_author_mode_name = "microblogposter_plg_multi_author_mode";
+        $who_can_auto_publish_ma_name = "microblogposter_who_can_auto_publish_ma";
+    }
     
     
     $url_shortener_value = get_option($url_shortener_name, "");
@@ -84,7 +99,7 @@ function microblogposter_settings_output()
     $enabled_custom_updates_value = get_option($enabled_custom_updates_name, "");
     $enabled_custom_updates_value = json_decode($enabled_custom_updates_value, true);
     $customer_license_key_value = get_option($customer_license_key_name, "");
-    $pro_control_dash_mode_value = get_option($pro_control_dash_mode_name, "");
+    
     $shortcode_title_max_length_value = get_option($shortcode_title_max_length_name, "110");
     $shortcode_firstwords_max_length_value = get_option($shortcode_firstwords_max_length_name, "90");
     $shortcode_excerpt_max_length_value = get_option($shortcode_excerpt_max_length_name, "400");
@@ -96,6 +111,15 @@ function microblogposter_settings_output()
     $microblogposter_plg_old_posts_expire_age_value = get_option($microblogposter_plg_old_posts_expire_age_name, 30);
     $excluded_categories_old_value = get_option($excluded_categories_old_name, "");
     $excluded_categories_old_value = json_decode($excluded_categories_old_value, true);
+    $who_can_auto_publish_value = get_option($who_can_auto_publish_name, "");
+    $who_can_auto_publish_value = json_decode($who_can_auto_publish_value, true);
+    $apply_filters_before_publishing_value = get_option($apply_filters_before_publishing_name, "");
+    if(MicroblogPoster_Poster::is_method_callable('MicroblogPoster_Poster_Ultimate_Options','is_loaded'))
+    {
+        $multi_author_mode_value = get_option($multi_author_mode_name, "");
+        $who_can_auto_publish_ma_value = get_option($who_can_auto_publish_ma_name, "");
+        $who_can_auto_publish_ma_value = json_decode($who_can_auto_publish_ma_value, true);
+    }
     
     
     $mbp_manual_share_tab_selected = false;
@@ -234,7 +258,15 @@ function microblogposter_settings_output()
     $mbp_logs_tab_selected = false;
     if(isset($_POST["empty_logs"]))
     {
-        $sql="DELETE FROM {$table_logs}";
+        $sql="DELETE FROM {$table_logs} WHERE 1";
+        if(MicroblogPoster_Poster::is_method_callable('MicroblogPoster_Poster_Ultimate','resolve_sql_logs'))
+        {
+            $sql .= MicroblogPoster_Poster_Ultimate::resolve_sql_logs();
+        }
+        else
+        {
+            $sql .= " AND account_id NOT IN (SELECT DISTINCT account_id FROM $table_user_accounts)";
+        }
         $wpdb->query($sql);
         $mbp_logs_tab_selected = true;
     }
@@ -281,7 +313,32 @@ function microblogposter_settings_output()
         $enabled_custom_types_value = json_encode($enabled_custom_types_value);
         $enabled_custom_updates_value = $_POST[$enabled_custom_updates_name];
         $enabled_custom_updates_value = json_encode($enabled_custom_updates_value);
-        $pro_control_dash_mode_value = $_POST[$pro_control_dash_mode_name];
+        $apply_filters_before_publishing_value = sanitize_text_field($_POST[$apply_filters_before_publishing_name]);
+        $who_can_auto_publish_value = $_POST[$who_can_auto_publish_name];
+        if(is_array($who_can_auto_publish_value))
+        {
+            array_unshift($who_can_auto_publish_value, 'administrator');
+        }
+        elseif(!$who_can_auto_publish_value)
+        {
+            $who_can_auto_publish_value = array('administrator');
+        }
+        $who_can_auto_publish_value = json_encode($who_can_auto_publish_value);
+        if(MicroblogPoster_Poster::is_method_callable('MicroblogPoster_Poster_Ultimate_Options','is_loaded'))
+        {
+            $multi_author_mode_value = sanitize_text_field($_POST[$multi_author_mode_name]);
+            $who_can_auto_publish_ma_value = $_POST[$who_can_auto_publish_ma_name];
+            if(is_array($who_can_auto_publish_ma_value))
+            {
+                array_unshift($who_can_auto_publish_ma_value, 'administrator');
+            }
+            elseif(!$who_can_auto_publish_ma_value)
+            {
+                $who_can_auto_publish_ma_value = array('administrator');
+            }
+            $who_can_auto_publish_ma_value = json_encode($who_can_auto_publish_ma_value);
+        }
+        
         $shortcode_title_max_length_value_temp = round(trim($_POST[$shortcode_title_max_length_name]));
         if(intval($shortcode_title_max_length_value_temp) && 
            intval($shortcode_title_max_length_value_temp) >= 30 && intval($shortcode_title_max_length_value_temp) <= 120)
@@ -315,6 +372,7 @@ function microblogposter_settings_output()
         update_option($ppw_user_id_name, $ppw_user_id_value);
         update_option($default_behavior_name, $default_behavior_value);
         update_option($default_behavior_update_name, $default_behavior_update_value);
+        update_option($apply_filters_before_publishing_name, $apply_filters_before_publishing_value);
         
         update_option($page_mode_name, $page_mode_value);
         if($page_mode_value == '1')
@@ -334,8 +392,60 @@ function microblogposter_settings_output()
         $enabled_custom_types_value = json_decode($enabled_custom_types_value, true);
         update_option($enabled_custom_updates_name, $enabled_custom_updates_value);
         $enabled_custom_updates_value = json_decode($enabled_custom_updates_value, true);
+        update_option($who_can_auto_publish_name, $who_can_auto_publish_value);
+        $who_can_auto_publish_value = json_decode($who_can_auto_publish_value, true);
+        if(MicroblogPoster_Poster::is_method_callable('MicroblogPoster_Poster_Ultimate_Options','is_loaded'))
+        {
+            update_option($multi_author_mode_name, $multi_author_mode_value);
+            update_option($who_can_auto_publish_ma_name, $who_can_auto_publish_ma_value);
+            $who_can_auto_publish_ma_value = json_decode($who_can_auto_publish_ma_value, true);
+        }
         
-        update_option($pro_control_dash_mode_name, $pro_control_dash_mode_value);
+        $roles = get_editable_roles();
+        if(is_array($roles) && !empty($roles))
+        {
+            foreach ($roles as $role_id => $role_details)
+            {
+                $role = get_role( $role_id );
+                if($role)
+                {
+                    if($role_id == 'administrator')
+                    {
+                        $role->add_cap('microblogposter_who_can_auto_publish');
+                        if(MicroblogPoster_Poster::is_method_callable('MicroblogPoster_Poster_Ultimate_Options', 'add_cap'))
+                        {
+                            MicroblogPoster_Poster_Ultimate_Options::add_cap($role);
+                        }
+                    }
+                    else
+                    {
+                        $role->remove_cap('microblogposter_who_can_auto_publish');
+                        if(MicroblogPoster_Poster::is_method_callable('MicroblogPoster_Poster_Ultimate_Options', 'remove_cap'))
+                        {
+                            MicroblogPoster_Poster_Ultimate_Options::remove_cap($role);
+                        }
+                    }
+                }
+            }
+        }
+        
+        if(is_array($who_can_auto_publish_value) && !empty($who_can_auto_publish_value))
+        {
+            foreach ($who_can_auto_publish_value as $role_id)
+            {
+                $role = get_role($role_id);
+                if($role)
+                {
+                    $role->add_cap( 'microblogposter_who_can_auto_publish' );
+                }
+            }
+        }
+        if(MicroblogPoster_Poster::is_method_callable('MicroblogPoster_Poster_Ultimate_Options','sync_cap'))
+        {
+            MicroblogPoster_Poster_Ultimate_Options::sync_cap($who_can_auto_publish_ma_value);
+        }
+        
+        
         update_option($shortcode_title_max_length_name, $shortcode_title_max_length_value);
         update_option($shortcode_firstwords_max_length_name, $shortcode_firstwords_max_length_value);
         update_option($shortcode_excerpt_max_length_name, $shortcode_excerpt_max_length_value);
@@ -362,9 +472,40 @@ function microblogposter_settings_output()
         $enabled_custom_updates = $enabled_custom_updates_value;
     }
     
+    $who_can_auto_publish = array();
+    if(is_array($who_can_auto_publish_value))
+    {
+        $roles = get_editable_roles();
+        if(is_array($roles) && !empty($roles))
+        {
+            foreach ($roles as $role_id => $role_details)
+            {
+                $role = get_role( $role_id );
+                if($role && $role->has_cap('microblogposter_who_can_auto_publish') && !in_array($role_id, $who_can_auto_publish))
+                {
+                    $who_can_auto_publish[] = $role_id;
+                }
+            }
+            if($who_can_auto_publish != $who_can_auto_publish_value)
+            {
+                $who_can_auto_publish_encoded = json_encode($who_can_auto_publish);
+                update_option($who_can_auto_publish_name, $who_can_auto_publish_encoded);
+            }
+        }
+    }
+    else
+    {
+        $who_can_auto_publish = MicroblogPoster_Poster::get_and_save_who_can_auto_publish_default();
+    }
+    
+    if(MicroblogPoster_Poster::is_method_callable('MicroblogPoster_Poster_Ultimate_Options','sync_who_can'))
+    {
+        $who_can_auto_publish_ma = MicroblogPoster_Poster_Ultimate_Options::sync_who_can($who_can_auto_publish_ma_name, $who_can_auto_publish_ma_value);
+    }
+    
     $http_auth_sites = array('friendfeed','delicious','diigo','instapaper');
     $tags_sites = array('delicious','diigo');
-    $featured_image_sites = array('blogger', 'twitter');
+    $featured_image_sites = array('blogger', 'twitter', 'tumblr');
     
     $mbp_accounts_tab_selected = false;
     if(isset($_GET["t"]) && $_GET["t"]==2)
@@ -607,6 +748,10 @@ function microblogposter_settings_output()
             
             if($wpdb->insert_id)
             {
+                if(MicroblogPoster_Poster::is_method_callable('MicroblogPoster_Poster_Ultimate','sync') && $multi_author_mode_value)
+                {
+                    MicroblogPoster_Poster_Ultimate::sync($wpdb->insert_id);
+                }
                 ?>
                 <div class="updated"><p><strong><?php _e('Account added successfully.', 'microblog-poster');?></strong></p></div>
                 <?php
@@ -849,6 +994,11 @@ function microblogposter_settings_output()
             
             $sql = "DELETE FROM {$table_accounts} WHERE account_id = %d";
             $wpdb->query($wpdb->prepare($sql, $account_id));
+            
+            if(MicroblogPoster_Poster::is_method_callable('MicroblogPoster_Poster_Ultimate','unsync') && $multi_author_mode_value)
+            {
+                MicroblogPoster_Poster_Ultimate::unsync($account_id);
+            }
             
             ?>
             <div class="updated"><p><strong><?php _e('Account deleted successfully.', 'microblog-poster');?></strong></p></div>
@@ -1668,7 +1818,8 @@ function microblogposter_settings_output()
             <?php _e('You\'ll never see "posted by MicroblogPoster" in your updates, you\'ll see "posted by your own App name" or simply "by API".', 'microblog-poster');?><br />
             <?php _e('If you like <span class="microblogposter-name">MicroblogPoster</span> or just find it useful, please <a class="mbp-add-review-link" href="https://wordpress.org/support/view/plugin-reviews/microblog-poster" target="_blank">Add a review</a>', 'microblog-poster');?>
         </p>
-            
+        
+        <?php if(current_user_can('manage_options')):?>
         <?php if(MicroblogPoster_Poster::is_method_callable('MicroblogPoster_Poster_Pro','filter_single_account') && !$customer_license_key_value['key']):?>
             <div class="error"><p><strong><?php _e('In order to complete the MicroblogPoster\'s Pro / Enterprise Add-on installation, please Save your Customer License Key.', 'microblog-poster');?></strong></p></div>
         <?php elseif(MicroblogPoster_Poster::is_method_callable('MicroblogPoster_Poster_Pro','filter_single_account') && $customer_license_key_value['key']):?>
@@ -1685,6 +1836,7 @@ function microblogposter_settings_output()
                 <input type="submit" name="update_license_key" class="button" value="<?php _e('Save License Key', 'microblog-poster');?>" />
             </form>
         <?php endif;?>
+        <?php endif;?>
         
         
         <div id="mbp-menu-wrapper">
@@ -1697,11 +1849,40 @@ function microblogposter_settings_output()
             </ul> 
         </div>
         
-        
+        <?php if( current_user_can('manage_options') ):?>
         <div id="mbp-general-section" class="mbp-single-tab-wrapper">
             <h3 id="general-header"><?php _e('Choose your general options', 'microblog-poster');?> :</h3>
             <form name="options_form" method="post" action="">
                 <table class="form-table">
+                    <?php 
+                        if(MicroblogPoster_Poster::is_method_callable('MicroblogPoster_Poster_Ultimate_Options', 'render_who_can_ma'))
+                        {
+                            MicroblogPoster_Poster_Ultimate_Options::render_who_can_ma($multi_author_mode_name, $multi_author_mode_value, $who_can_auto_publish_ma);
+                        }
+                    ?>
+                    
+                    <tr>
+                        <td colspan="2">
+                            <h3><span class="mbp-blue-title"><?php _e('Who can auto publish :', 'microblog-poster');?></span></h3>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" id="mbp-excluded-category-td">
+                    <?php
+                        
+                        $roles = get_editable_roles();
+                        if(is_array($roles) && !empty($roles))
+                        {
+                            foreach ($roles as $role_id => $role)
+                            {
+                                microblogposter_display_role($role_id, $role, '<span class="mbp-separator-span"></span>', $who_can_auto_publish);
+                            }
+                        }
+                        ?>
+                        </td>
+                    </tr>
+                    
+                    
                     <tr>
                         <td colspan="2">
                             <h3><span class="mbp-blue-title"><?php _e('Url Shortener', 'microblog-poster');?> :</span></h3>
@@ -2051,33 +2232,23 @@ function microblogposter_settings_output()
                         <td><input type="text" id="<?php echo $shortcode_excerpt_max_length_name;?>" name="<?php echo $shortcode_excerpt_max_length_name;?>" value="<?php echo $shortcode_excerpt_max_length_value;?>" size="10" />&nbsp;<?php _e('characters', 'microblog-poster');?>.&nbsp;&nbsp;(<?php _e('default value', 'microblog-poster');?>=400, <?php _e('range between', 'microblog-poster');?> 100 <?php _e('and', 'microblog-poster');?> 600)</td>
                     </tr>
                     
+                    <tr>
+                        <td class="label-input padding-left"><?php _e('Apply filters prior to auto publishing :', 'microblog-poster');?></td>
+                        <td><input type="checkbox" id="<?php echo $apply_filters_before_publishing_name;?>" name="<?php echo $apply_filters_before_publishing_name;?>" value="1" <?php if($apply_filters_before_publishing_value) echo 'checked="checked"';?> /></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" class="label-input padding-left"><?php _e('Shortcodes filtered :', 'microblog-poster'); echo ' {TITLE} , {MANUAL_EXCERPT} , {EXCERPT} , {CONTENT_FIRST_WORDS}';?></td>
+                    </tr>
+                    
                 </table>
-                <?php if(MicroblogPoster_Poster::is_method_callable('MicroblogPoster_Poster_Pro','filter_single_account')):?>
-                <h3 id="pro-addon-header"><?php _e('Pro / Enterprise Add-on Section:', 'microblog-poster');?></h3>
-                <table class="form-table">
-                    <tr>
-                        <td colspan="2">
-                            <h3><span class="mbp-blue-title"><?php _e('MicroblogPoster\'s Control Dashboard :', 'microblog-poster');?></span></h3>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="2" id="mbp-excluded-category-header">
-                            <?php _e('If you\'re posting to your blog by email,', 'microblog-poster');?><br /> 
-                            <?php _e('you\'ll need to disable the MicroblogPoster\'s Control Dashboard in order to cross-post successfully.', 'microblog-poster');?>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="label-input"><?php _e('Disable the control dashboard:', 'microblog-poster');?></td>
-                        <td><input type="checkbox" id="microblogposter_plg_control_dash_mode" name="microblogposter_plg_control_dash_mode" value="1" <?php if($pro_control_dash_mode_value) echo 'checked="checked"';?> /></td>
-                    </tr>
-                </table>
-                <?php endif;?>
+                
                 <p class="submit">
                     <input type="submit" name="update_options" class="update-options button-primary" value="<?php _e('Update Options', 'microblog-poster');?>" />
                 </p>
             </form>
         </div>
-        
+        <?php endif;?>
+            
         <div id="mbp-social-networks-accounts" class="mbp-single-tab-wrapper">
         <h3 id="network-accounts-header"><?php _e('Configure Your Social Networks Accounts :', 'microblog-poster');?></h3>
         
@@ -2093,8 +2264,7 @@ function microblogposter_settings_output()
             <h4><?php _e('Twitter Accounts', 'microblog-poster');?></h4>
         </div>
         <?php
-        $sql="SELECT * FROM $table_accounts WHERE type='twitter'";
-        $rows = $wpdb->get_results($sql);
+        $rows = MicroblogPoster_Poster::get_accounts_object('twitter');
         foreach($rows as $row):
             $update_accounts[] = $row->account_id;
         
@@ -2257,8 +2427,7 @@ function microblogposter_settings_output()
             <h4><?php _e('Plurk Accounts', 'microblog-poster');?></h4>
         </div>
         <?php
-        $sql="SELECT * FROM $table_accounts WHERE type='plurk'";
-        $rows = $wpdb->get_results($sql);
+        $rows = MicroblogPoster_Poster::get_accounts_object('plurk');
         foreach($rows as $row):
             $update_accounts[] = $row->account_id;
             $plurk_qualifier = "says";
@@ -2398,8 +2567,7 @@ function microblogposter_settings_output()
             <h4><?php _e('Delicious Accounts', 'microblog-poster');?></h4>
         </div>  
         <?php
-        $sql="SELECT * FROM $table_accounts WHERE type='delicious'";
-        $rows = $wpdb->get_results($sql);
+        $rows = MicroblogPoster_Poster::get_accounts_object('delicious');
         foreach($rows as $row):
             $update_accounts[] = $row->account_id;
             $is_raw = MicroblogPoster_SupportEnc::is_enc($row->extra);
@@ -2491,8 +2659,7 @@ function microblogposter_settings_output()
             <h4><?php _e('Facebook Accounts', 'microblog-poster');?></h4>
         </div>
         <?php
-        $sql="SELECT * FROM $table_accounts WHERE type='facebook'";
-        $rows = $wpdb->get_results($sql);
+        $rows = MicroblogPoster_Poster::get_accounts_object('facebook');
         foreach($rows as $row):
             $update_accounts[] = $row->account_id;
             
@@ -2688,8 +2855,7 @@ function microblogposter_settings_output()
             <h4><?php _e('Diigo Accounts', 'microblog-poster');?></h4>
         </div>  
         <?php
-        $sql="SELECT * FROM $table_accounts WHERE type='diigo'";
-        $rows = $wpdb->get_results($sql);
+        $rows = MicroblogPoster_Poster::get_accounts_object('diigo');
         foreach($rows as $row):
             $update_accounts[] = $row->account_id;
             $is_raw = MicroblogPoster_SupportEnc::is_enc($row->extra);
@@ -2790,8 +2956,7 @@ function microblogposter_settings_output()
             <h4><?php _e('Linkedin Accounts', 'microblog-poster');?></h4>
         </div>
         <?php
-        $sql="SELECT * FROM $table_accounts WHERE type='linkedin'";
-        $rows = $wpdb->get_results($sql);
+        $rows = MicroblogPoster_Poster::get_accounts_object('linkedin');
         foreach($rows as $row):
             $update_accounts[] = $row->account_id;
         
@@ -2971,8 +3136,7 @@ function microblogposter_settings_output()
             <h4><?php _e('Tumblr Accounts', 'microblog-poster');?></h4>
         </div>
         <?php
-        $sql="SELECT * FROM $table_accounts WHERE type='tumblr'";
-        $rows = $wpdb->get_results($sql);
+        $rows = MicroblogPoster_Poster::get_accounts_object('tumblr');
         foreach($rows as $row):
             $update_accounts[] = $row->account_id;
         
@@ -2990,6 +3154,7 @@ function microblogposter_settings_output()
                 {
                     $tmb_blog_hostname = $tmb_acc_extra['blog_hostname'];
                 }
+                $include_featured_image = (isset($tmb_acc_extra['include_featured_image']) && $tmb_acc_extra['include_featured_image'] == 1)?true:false;
             }
             
             $authorize_step = 1;
@@ -3039,13 +3204,21 @@ function microblogposter_settings_output()
                                 <span class="description-small"><?php echo $description_shortcodes;?></span>
                             </div>
                             <div class="mbp-separator"></div>
+                            <div class="input-div">
+                                <?php _e('Include featured image:', 'microblog-poster');?>
+                            </div>
+                            <div class="input-div-large">
+                                <input type="checkbox" id="include_featured_image_tumblr" name="include_featured_image" value="1" <?php if ($include_featured_image) echo "checked";?> <?php if($tmb_post_type=='link') echo 'disabled="disabled"';?>/>
+                                <span class="description"><?php _e('Do you want to include featured image in your updates?', 'microblog-poster');?></span>
+                            </div>
+                            <div class="mbp-separator"></div>
                             <div class="input-div input-div-radio">
                                 <?php _e('Post Type:', 'microblog-poster');?>
                             </div>
                             <div class="input-div-large">
-                                <input type="radio" name="mbp_post_type_tmb" value="text" <?php if($tmb_post_type=='text') echo 'checked="checked"';?> > <?php _e('Text', 'microblog-poster');?> <span class="description"><?php _e('(Text status update.)', 'microblog-poster');?></span><br>
+                                <input type="radio" class="post_type_tmb_class1" name="mbp_post_type_tmb" value="text" <?php if($tmb_post_type=='text') echo 'checked="checked"';?> > <?php _e('Text', 'microblog-poster');?> <span class="description"><?php _e('(Text status update.)', 'microblog-poster');?></span><br>
                                 <?php if(MicroblogPoster_Poster::is_method_callable('MicroblogPoster_Poster_Pro','filter_single_account')):?>
-                                <input type="radio" name="mbp_post_type_tmb" value="link" <?php if($tmb_post_type=='link') echo 'checked="checked"';?> > <?php _e('Link', 'microblog-poster');?> <span class="description"><?php _e('Tumblr link box status update.', 'microblog-poster');?></span>
+                                <input type="radio" class="post_type_tmb_class1" name="mbp_post_type_tmb" value="link" <?php if($tmb_post_type=='link') echo 'checked="checked"';?> > <?php _e('Link', 'microblog-poster');?> <span class="description"><?php _e('Tumblr link box status update.', 'microblog-poster');?></span>
                                 <?php endif;?>
                             </div>
                             <?php if(MicroblogPoster_Poster::is_method_callable('MicroblogPoster_Poster_Pro','filter_single_account')):?>
@@ -3129,8 +3302,7 @@ function microblogposter_settings_output()
             <h4><?php _e('Blogger Accounts', 'microblog-poster');?></h4>
         </div>
         <?php
-        $sql="SELECT * FROM $table_accounts WHERE type='blogger'";
-        $rows = $wpdb->get_results($sql);
+        $rows = MicroblogPoster_Poster::get_accounts_object('blogger');
         foreach($rows as $row):
             $update_accounts[] = $row->account_id;
         
@@ -3264,8 +3436,7 @@ function microblogposter_settings_output()
             <h4><?php _e('Instapaper Accounts', 'microblog-poster');?></h4>
         </div>  
         <?php
-        $sql="SELECT * FROM $table_accounts WHERE type='instapaper'";
-        $rows = $wpdb->get_results($sql);
+        $rows = MicroblogPoster_Poster::get_accounts_object('instapaper');
         foreach($rows as $row):
             $update_accounts[] = $row->account_id;
             $is_raw = MicroblogPoster_SupportEnc::is_enc($row->extra);
@@ -3346,8 +3517,7 @@ function microblogposter_settings_output()
             <h4><?php _e('VKontakte Accounts', 'microblog-poster');?></h4>
         </div>
         <?php
-        $sql="SELECT * FROM $table_accounts WHERE type='vkontakte'";
-        $rows = $wpdb->get_results($sql);
+        $rows = MicroblogPoster_Poster::get_accounts_object('vkontakte');
         foreach($rows as $row):
             $update_accounts[] = $row->account_id;
             
@@ -3526,8 +3696,7 @@ function microblogposter_settings_output()
             <h4><?php _e('Xing Accounts', 'microblog-poster');?></h4>
         </div>
         <?php
-        $sql="SELECT * FROM $table_accounts WHERE type='xing'";
-        $rows = $wpdb->get_results($sql);
+        $rows = MicroblogPoster_Poster::get_accounts_object('xing');
         foreach($rows as $row):
             $update_accounts[] = $row->account_id;
         
@@ -4162,12 +4331,20 @@ function microblogposter_settings_output()
                             <span class="description-small"><?php echo $description_shortcodes;?></span>
                         </div>
                         <div class="mbp-separator"></div>
+                        <div class="input-div">
+                            <?php _e('Include featured image:', 'microblog-poster');?>
+                        </div>
+                        <div class="input-div-large">
+                            <input type="checkbox" id="include_featured_image_tumblr" name="include_featured_image" value="1" />
+                            <span class="description"><?php _e('Do you want to include featured image in your updates?', 'microblog-poster');?></span>
+                        </div>
+                        <div class="mbp-separator"></div>
                         <div class="input-div input-div-radio">
                             <?php _e('Post Type:', 'microblog-poster');?>
                         </div>
                         <div class="input-div-large">
-                            <input type="radio" class="post_type_tmb_class" name="mbp_post_type_tmb" id="post_type_tmb_text" value="text" checked="checked"> <?php _e('Text', 'microblog-poster');?> <span class="description"><?php _e('(Text status update.)', 'microblog-poster');?></span><br>
-                            <input type="radio" class="post_type_tmb_class" name="mbp_post_type_tmb" value="link"> <?php _e('Link', 'microblog-poster');?> <span class="description"><?php _e('Tumblr link box status update.', 'microblog-poster');?></span>
+                            <input type="radio" class="post_type_tmb_class post_type_tmb_class1" name="mbp_post_type_tmb" id="post_type_tmb_text" value="text" checked="checked"> <?php _e('Text', 'microblog-poster');?> <span class="description"><?php _e('(Text status update.)', 'microblog-poster');?></span><br>
+                            <input type="radio" class="post_type_tmb_class post_type_tmb_class1" name="mbp_post_type_tmb" value="link"> <?php _e('Link', 'microblog-poster');?> <span class="description"><?php _e('Tumblr link box status update.', 'microblog-poster');?></span>
                         </div>
                         <div class="input-div">
 
@@ -4492,12 +4669,13 @@ function microblogposter_settings_output()
         }
         #account_type_wrapper
         {
-            width: 285px;
+            width: 330px;
             height: 30px;
             margin: 0 auto;
             padding-top: 5px;
             background-color: #f2f2f2;
             border-radius: 10px;
+            text-align: center;
         }
         .one-account
         {
@@ -4925,7 +5103,7 @@ function microblogposter_settings_output()
         {
             margin-left: 85px;
             display: inline-block;
-            width: 180px;
+            width: 200px;
         }
         #mbp-old-posts-intro-area
         {
@@ -4933,6 +5111,7 @@ function microblogposter_settings_output()
         } 
     </style>
 
+    <?php if( current_user_can('manage_options') ):?>
     <div id="mbp-old-posts-publish-wrapper" class="mbp-single-tab-wrapper">
         <h3 id="old-posts-header"><?php _e('Auto re-publish your old blog posts to social accounts :', 'microblog-poster');?></h3>
         
@@ -5029,6 +5208,7 @@ function microblogposter_settings_output()
             <?php microblogposter_show_mini_control_dashboard_old();?>
         </form>
     </div>
+    <?php endif;?>
     
     <div id="mbp-manual-post-wrapper" class="mbp-single-tab-wrapper">
         
@@ -5153,7 +5333,16 @@ function microblogposter_settings_output()
         <th class="logs-post-id"><?php _e('Post ID', 'microblog-poster');?></th>
         </tr>
     <?php
-        $sql="SELECT * FROM $table_logs ORDER BY log_id DESC LIMIT 200";
+        $sql="SELECT * FROM $table_logs WHERE 1";
+        if(MicroblogPoster_Poster::is_method_callable('MicroblogPoster_Poster_Ultimate','resolve_sql_logs'))
+        {
+            $sql .= MicroblogPoster_Poster_Ultimate::resolve_sql_logs();
+        }
+        else
+        {
+            $sql .= " AND account_id NOT IN (SELECT DISTINCT account_id FROM $table_user_accounts)";
+        }
+        $sql .= " ORDER BY log_id DESC LIMIT 200";
         $rows = $wpdb->get_results($sql);
         foreach($rows as $row):
             $color_class = "";
@@ -5271,6 +5460,7 @@ function microblogposter_settings_output()
                         $("div#fancybox-content #mbp-tumblr-input-div").show().find('input').removeAttr('disabled');
                         $("div#fancybox-content #mbp-tumblr-upgrade-now").hide();
                         $(".save-account").removeAttr('disabled');
+                        $("div#fancybox-content #include_featured_image_tumblr").removeAttr('disabled');
                     }
                     
                 }
@@ -5370,7 +5560,7 @@ function microblogposter_settings_output()
                 var target_type = $(this).val();
                 
                 <?php if(MicroblogPoster_Poster::is_method_callable('MicroblogPoster_Poster_Pro','filter_single_account')):?>
-                        
+                    
                 <?php else:?>
                     if(target_type == 'link')
                     {
@@ -5387,6 +5577,19 @@ function microblogposter_settings_output()
                 <?php endif;?>
                 
                 
+            });
+            $(".post_type_tmb_class1").live("change", function(){
+                var target_type = $(this).val();
+                
+                if(target_type == 'link')
+                {
+                    $("div#fancybox-content #include_featured_image_tumblr").removeAttr('checked');
+                    $("div#fancybox-content #include_featured_image_tumblr").attr('disabled','disabled');
+                }
+                else if(target_type == 'text')
+                {
+                    $("div#fancybox-content #include_featured_image_tumblr").removeAttr('disabled');
+                }
             });
             
             $("#mbp_vkontakte_target_type").live("change", function(){
@@ -5475,6 +5678,8 @@ function microblogposter_settings_output()
                 });
             <?php endforeach;?>
             
+            
+            
             <?php if($mbp_accounts_tab_selected):?>
                 $('#mbp-general-section').hide();
                 $('#mbp-logs-wrapper').hide();
@@ -5507,6 +5712,30 @@ function microblogposter_settings_output()
                 $("#mbp-general-tab").addClass('mbp-selected-tab').removeClass('mbp-tab-background');
             <?php endif;?>
             
+            <?php if(MicroblogPoster_Poster::is_method_callable('MicroblogPoster_Poster_Ultimate_Options','render_who_can_ma')):?>
+                <?php if(!current_user_can('manage_options') && $multi_author_mode_value):?>
+                
+                    $("#mbp-general-tab").removeClass('mbp-selected-tab').addClass('mbp-tab-background');
+                    $('#mbp-general-tab').hide();
+                    $("#mbp-old-posts-publish-tab").removeClass('mbp-selected-tab').addClass('mbp-tab-background');
+                    $('#mbp-old-posts-publish-tab').hide();
+
+                    $('#mbp-accounts-tab').addClass('mbp-tab-first');
+                    $("#mbp-accounts-tab").addClass('mbp-selected-tab').removeClass('mbp-tab-background');
+                    $('#mbp-social-networks-accounts').show();
+                    <?php if($mbp_manual_share_tab_selected):?>
+                        $("#mbp-accounts-tab").addClass('mbp-tab-background').removeClass('mbp-selected-tab');
+                        $('#mbp-social-networks-accounts').hide();
+                        $("#mbp-manual-post-tab").addClass('mbp-selected-tab').removeClass('mbp-tab-background');
+                    <?php endif;?>
+                    <?php if($mbp_logs_tab_selected):?>
+                        $("#mbp-accounts-tab").addClass('mbp-tab-background').removeClass('mbp-selected-tab');
+                        $('#mbp-social-networks-accounts').hide();
+                        $("#mbp-logs-tab").addClass('mbp-selected-tab').removeClass('mbp-tab-background');
+                    <?php endif;?>
+
+                <?php endif;?>
+            <?php endif;?>
             
             $("#mbp-general-tab").live("click", function(){
                 $('#mbp-social-networks-accounts').hide();
@@ -5622,7 +5851,7 @@ function microblogposter_settings_output()
                 $(".mbp-additional-shorteners").hide().find('input').attr('disabled','disabled');
             <?php endif;?>
                 
-            <?php if( in_array(get_locale(), array('de_DE', 'de_CH')) ):?>
+            <?php if( in_array(get_locale(), array('de_DE', 'de_CH', 'ru_RU', 'uk')) ):?>
                 $('#mbp-menu-wrapper #mbp-menu li').css({ "font-size": "13px"});
             <?php endif;?>
         });
@@ -5733,6 +5962,18 @@ function microblogposter_display_custom_type($custom_type, $sep, $enabled_custom
     <label for="microblogposter_enabled_custom_types_<?php echo $custom_type;?>" ><?php echo $custom_type;?></label> 
     &nbsp;&nbsp;-&nbsp;&nbsp;<?php _e('Don\'t cross-post automatically on Update', 'microblog-poster');?>&nbsp;<input type="checkbox" class="mbp-excluded-category" id="microblogposter_enabled_custom_updates_<?php echo $custom_type;?>" name="microblogposter_enabled_custom_updates[]" value="<?php echo $custom_type;?>" <?php if(in_array($custom_type, $enabled_custom_updates)) echo 'checked="checked"';?> /> 
     &nbsp;(<?php _e('This is most likely to be checked.', 'microblog-poster');?>)<br/>
+    <?php
+    
+}
+
+function microblogposter_display_role($role_id, $role, $sep, $who_can_auto_publish)
+{
+    
+    ?>
+    <?php echo $sep;?>
+    <input type="checkbox" class="mbp-excluded-category" id="microblogposter_who_can_auto_publish_<?php echo $role_id;?>" name="microblogposter_who_can_auto_publish[]" value="<?php echo $role_id;?>" <?php if(in_array($role_id, $who_can_auto_publish)) echo 'checked="checked"';?> <?php if($role_id == 'administrator') echo 'disabled="disabled"';?>/> 
+    <label for="microblogposter_who_can_auto_publish_<?php echo $role_id;?>" ><?php echo $role['name'];?></label> 
+    <br/>
     <?php
     
 }
@@ -5958,7 +6199,7 @@ function microblogposter_show_common_account_dashboard_head($site)
             $site_label = $site;
             if($site == 'vkontakte'){$site_label = 'vKontakte';}
         ?>
-        <?php if( in_array(get_locale(), array('fr_FR', 'pt_PT', 'pt_BR', 'es_ES', 'es_MX', 'es_PE', 'it_IT')) ):?>
+        <?php if( in_array(get_locale(), array('fr_FR', 'pt_PT', 'pt_BR', 'es_ES', 'es_MX', 'es_PE', 'it_IT', 'ru_RU', 'uk')) ):?>
             <h4><?php _e('Accounts', 'microblog-poster');?> <?php echo ucfirst($site_label);?></h4>
         <?php else:?>
             <h4><?php echo ucfirst($site_label);?> <?php _e('Accounts', 'microblog-poster');?></h4>
@@ -6047,7 +6288,7 @@ function microblogposter_show_mini_control_dashboard_old()
 
     <input type="hidden" name="mbp_control_dashboard_microblogposter" value="1" /> 
     <?php 
-        $twitter_accounts = MicroblogPoster_Poster::get_accounts_object('twitter');
+        $twitter_accounts = MicroblogPoster_Poster::get_accounts_object_all('twitter');
         if(!empty($twitter_accounts)):
             microblogposter_show_common_account_dashboard_head_old('twitter');
             foreach($twitter_accounts as $twitter_account):
@@ -6061,7 +6302,7 @@ function microblogposter_show_mini_control_dashboard_old()
 
 
     <?php 
-        $plurk_accounts = MicroblogPoster_Poster::get_accounts_object('plurk');
+        $plurk_accounts = MicroblogPoster_Poster::get_accounts_object_all('plurk');
         if(!empty($plurk_accounts)):
             microblogposter_show_common_account_dashboard_head_old('plurk');
             foreach($plurk_accounts as $plurk_account):
@@ -6074,7 +6315,7 @@ function microblogposter_show_mini_control_dashboard_old()
     ?>
 
     <?php 
-        $friendfeed_accounts = MicroblogPoster_Poster::get_accounts_object('friendfeed');
+        $friendfeed_accounts = MicroblogPoster_Poster::get_accounts_object_all('friendfeed');
         if(!empty($friendfeed_accounts)):
             microblogposter_show_common_account_dashboard_head_old('friendfeed'); 
             foreach($friendfeed_accounts as $friendfeed_account):
@@ -6087,7 +6328,7 @@ function microblogposter_show_mini_control_dashboard_old()
     ?>
 
     <?php 
-        $delicious_accounts = MicroblogPoster_Poster::get_accounts_object('delicious');
+        $delicious_accounts = MicroblogPoster_Poster::get_accounts_object_all('delicious');
         if(!empty($delicious_accounts)):
             microblogposter_show_common_account_dashboard_head_old('delicious'); 
             foreach($delicious_accounts as $delicious_account):
@@ -6100,7 +6341,7 @@ function microblogposter_show_mini_control_dashboard_old()
     ?>
 
     <?php 
-        $facebook_accounts = MicroblogPoster_Poster::get_accounts_object('facebook');
+        $facebook_accounts = MicroblogPoster_Poster::get_accounts_object_all('facebook');
         if(!empty($facebook_accounts)):
             microblogposter_show_common_account_dashboard_head_old('facebook'); 
             foreach($facebook_accounts as $facebook_account):
@@ -6113,7 +6354,7 @@ function microblogposter_show_mini_control_dashboard_old()
     ?>
 
     <?php 
-        $diigo_accounts = MicroblogPoster_Poster::get_accounts_object('diigo');
+        $diigo_accounts = MicroblogPoster_Poster::get_accounts_object_all('diigo');
         if(!empty($diigo_accounts)):
             microblogposter_show_common_account_dashboard_head_old('diigo'); 
             foreach($diigo_accounts as $diigo_account):
@@ -6126,7 +6367,7 @@ function microblogposter_show_mini_control_dashboard_old()
     ?>
 
     <?php 
-        $linkedin_accounts = MicroblogPoster_Poster::get_accounts_object('linkedin');
+        $linkedin_accounts = MicroblogPoster_Poster::get_accounts_object_all('linkedin');
         if(!empty($linkedin_accounts)):
             microblogposter_show_common_account_dashboard_head_old('linkedin'); 
             foreach($linkedin_accounts as $linkedin_account):
@@ -6139,7 +6380,7 @@ function microblogposter_show_mini_control_dashboard_old()
     ?>
 
     <?php 
-        $tumblr_accounts = MicroblogPoster_Poster::get_accounts_object('tumblr');
+        $tumblr_accounts = MicroblogPoster_Poster::get_accounts_object_all('tumblr');
         if(!empty($tumblr_accounts)):
             microblogposter_show_common_account_dashboard_head_old('tumblr'); 
             foreach($tumblr_accounts as $tumblr_account):
@@ -6152,7 +6393,7 @@ function microblogposter_show_mini_control_dashboard_old()
     ?>
 
     <?php 
-        $blogger_accounts = MicroblogPoster_Poster::get_accounts_object('blogger');
+        $blogger_accounts = MicroblogPoster_Poster::get_accounts_object_all('blogger');
         if(!empty($blogger_accounts)):
             microblogposter_show_common_account_dashboard_head_old('blogger'); 
             foreach($blogger_accounts as $blogger_account):
@@ -6165,7 +6406,7 @@ function microblogposter_show_mini_control_dashboard_old()
     ?>
 
     <?php 
-        $instapaper_accounts = MicroblogPoster_Poster::get_accounts_object('instapaper');
+        $instapaper_accounts = MicroblogPoster_Poster::get_accounts_object_all('instapaper');
         if(!empty($instapaper_accounts)):
             microblogposter_show_common_account_dashboard_head_old('instapaper'); 
             foreach($instapaper_accounts as $instapaper_account):
@@ -6178,7 +6419,7 @@ function microblogposter_show_mini_control_dashboard_old()
     ?>
     
     <?php 
-        $vkontakte_accounts = MicroblogPoster_Poster::get_accounts_object('vkontakte');
+        $vkontakte_accounts = MicroblogPoster_Poster::get_accounts_object_all('vkontakte');
         if(!empty($vkontakte_accounts)):
             microblogposter_show_common_account_dashboard_head_old('vkontakte'); 
             foreach($vkontakte_accounts as $vkontakte_account):
@@ -6191,7 +6432,7 @@ function microblogposter_show_mini_control_dashboard_old()
     ?>
     
     <?php 
-        $xing_accounts = MicroblogPoster_Poster::get_accounts_object('xing');
+        $xing_accounts = MicroblogPoster_Poster::get_accounts_object_all('xing');
         if(!empty($xing_accounts)):
             microblogposter_show_common_account_dashboard_head_old('xing'); 
             foreach($xing_accounts as $xing_account):
@@ -6216,7 +6457,7 @@ function microblogposter_show_common_account_dashboard_head_old($site)
             $site_label = $site;
             if($site == 'vkontakte'){$site_label = 'vKontakte';}
         ?>
-        <?php if( in_array(get_locale(), array('fr_FR', 'pt_PT', 'pt_BR', 'es_ES', 'es_MX', 'es_PE', 'it_IT')) ):?>
+        <?php if( in_array(get_locale(), array('fr_FR', 'pt_PT', 'pt_BR', 'es_ES', 'es_MX', 'es_PE', 'it_IT', 'ru_RU', 'uk')) ):?>
             <h4><?php _e('Accounts', 'microblog-poster');?> <?php echo ucfirst($site_label);?></h4>
         <?php else:?>
             <h4><?php echo ucfirst($site_label);?> <?php _e('Accounts', 'microblog-poster');?></h4>

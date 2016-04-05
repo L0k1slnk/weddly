@@ -1,0 +1,1 @@
+Detectizr.detect({detectScreen: false});
