@@ -1,0 +1,79 @@
+/*********************************
+            main navigation
+*********************************/
+
+
+.slideout-menu,
+.main-navigation,
+.special-navigation{
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  z-index: 0;
+  width: 256px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  display: none;
+}
+
+.slideout-panel {
+  position:relative;
+  z-index: 1;
+  will-change: transform;
+}
+
+.slideout-open,
+.slideout-open body,
+.slideout-open .slideout-panel {
+  overflow: hidden;
+}
+
+.slideout-open .slideout-menu {
+  display: block;
+}
+
+.main-navigation{
+  background: $c_lavenderFog;
+
+  a{
+
+  }
+}
+
+
+.nav-menu{
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  @media screen and (min-width: $w_normal) {
+
+  }
+}
+
+.main-nav-btn{
+  color: $c_lavenderFog;
+  font-size: 1.5rem;
+  position: absolute;
+  top: $borderWidth*2;
+  left: $borderWidth*2;
+}
+/*********************************
+       specail navigation
+*********************************/
+
+.special-navigation{
+  left: auto;
+  background: $c_lavenderFog;
+}
+
+
+.special-nav-btn{
+  color: $c_lavenderFog;
+  font-size: 1.5rem;
+  position: absolute;
+  top: $borderWidth*2;
+  right: $borderWidth*2;
+}

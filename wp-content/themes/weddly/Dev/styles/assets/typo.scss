@@ -4,11 +4,21 @@ html{
   line-height: 1.5;
 }
 
+::selection{
+  background: $c_roseQuartz;
+}
+
 @for $i from 1 through 6 {
   h#{$i}{
     font-family: 'Helvetica Narrow', 'Arial Narrow', Helvetica, Arial, san-serif;
     color: $c_serenity;
     font-weight: 300;
+    line-height: 1.2;
+
+    &::selection{
+      color: $c_white;
+      background: $c_serenity;
+    }
   }
 }
 

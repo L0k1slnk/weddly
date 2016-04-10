@@ -7,10 +7,7 @@
 				</div>
 
 			</footer>
-
-		</div> <?php // page-wrapper ?>
-
-		<?php // all js scripts are loaded in library/bones.php ?>
+			
 		<?php wp_footer(); ?>
 
 	</body>

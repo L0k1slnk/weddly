@@ -29,7 +29,7 @@ module.exports = function (grunt) {
             scripts: {
                 files: {
                     'Dist/scripts/fouc.js': ['Dev/scripts/vendor/modernizr.js', 'Dev/scripts/vendor/detectizr.js', 'Dev/scripts/foucInit.js'],
-                    'Dist/scripts/main.js': ['Dev/scripts/vendor/jquery-1.12.2.min.js', 'Dev/scripts/main.js']
+                    'Dist/scripts/main.js': ['Dev/scripts/vendor/jquery-1.12.2.min.js', 'Dev/scripts/vendor/slideout.js', 'Dev/scripts/menu.js']
                 }
             }
         },

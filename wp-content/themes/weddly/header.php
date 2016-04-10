@@ -41,42 +41,23 @@
 
 	<body <?php body_class(); ?> itemscope itemtype="http://schema.org/WebPage">
 
-		<div class="page-wrapper"> <?php // close this tag in footer.php ?>
 
 			<header class="header" role="banner" itemscope itemtype="http://schema.org/WPHeader">
 
-
-
-					<?php // to use a image just replace the bloginfo('name') with your img src and remove the surrounding <p> ?>
+				<div class="logo-wrapper">
 					<a class="logo logo--header" href="<?php echo home_url(); ?>" rel="nofollow" itemscope itemtype="http://schema.org/Organization"><?php bloginfo('name'); ?></a>
-
-					<?php // if you'd like to use the site description you can un-comment it below ?>
 					<?php // bloginfo('description'); ?>
-
-					<?php if ( has_nav_menu( 'primary' ) ) : ?>
-						<nav id="site-navigation" class="main-navigation" role="navigation">
-							<?php
-							// Primary navigation menu.
-							wp_nav_menu( array(
-								'menu_class'     => 'nav-menu',
-								'theme_location' => 'primary',
-							) );
-							?>
-						</nav><!-- .main-navigation -->
-					<?php endif; ?>
+				</div>
 
 				<?php if ( has_nav_menu( 'primary' ) ) : ?>
-					<nav class="menu" role="navigation" itemscope itemtype="http://schema.org/SiteNavigationElement">
+					<nav id="site-navigation" class="main-navigation" role="navigation" itemscope itemtype="http://schema.org/SiteNavigationElement">
 						<?php
-							// Primary navigation menu.
-							wp_nav_menu( array(
-								'menu_class'     => 'nav-menu',
-								'theme_location' => 'primary',
-							) );
+						// Primary navigation menu.
+						wp_nav_menu( array(
+							'menu_class'     => 'nav-menu',
+							'theme_location' => 'primary',
+						) );
 						?>
-					</nav>
+					</nav><!-- .main-navigation -->
 				<?php endif; ?>
-
-
-
 			</header>

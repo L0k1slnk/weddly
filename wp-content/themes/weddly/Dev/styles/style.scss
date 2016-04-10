@@ -1,7 +1,12 @@
 @import "vendor/normalize";
 @import "assets/vars";
+@import "assets/mixins";
+@import "assets/grid";
 
 @import "vendor/font-awesome";
 @import "assets/typo";
 
 @import "assets/base";
+
+@import "blocks/menu";
+@import "blocks/article";

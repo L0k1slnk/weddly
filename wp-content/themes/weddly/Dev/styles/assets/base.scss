@@ -1,3 +1,25 @@
+
+body {
+  width: 100%;
+  height: 100%;
+}
+
+.container{
+  max-width: $pageWidthMax;
+  margin: 0 auto;
+  padding: 0 $borderWidth*2;
+
+  @media screen and (min-width: $w_normal) {
+    padding: 0;
+  }
+}
+
+.main-wrapper{
+  background: $c_white;
+  padding-top: $borderWidth*4;
+}
+
+
 /*********************************
             header
 *********************************/
@@ -7,12 +29,15 @@
 *********************************/
 
 .logo{
+  display: inline-block;
+  text-indent: -9999px;
+  width: 140px;
+  height: 150px;
+  position: relative;
+  background: url("../images/weddly_logo.jpg") no-repeat 0 0;
 
-}
-/*********************************
-            top menu
-*********************************/
+  &-wrapper{
+    display: none;
 
-.menu{
-
+  }
 }
