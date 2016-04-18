@@ -1,60 +1,43 @@
 <?php get_header(); ?>
 
-    <main class="main-wrapper" role="main" itemscope itemprop="mainContentOfPage" itemtype="http://schema.org/Blog">
-        <div class="container">
-            <?php if ( has_nav_menu( 'primary' ) ) : ?>
-                <span class="main-nav-btn fa fa-bars js-menu-toggle"></span>
-            <?php endif; ?>
-            <span class="special-nav-btn fa fa-filter js-special-toggle"></span>
+<main class="main-wrapper" role="main" itemscope itemprop="mainContentOfPage" itemtype="http://schema.org/Blog">
+    <div class="container">
+        <?php if (has_nav_menu('primary')) : ?>
+            <span class="main-nav-btn fa fa-bars js-menu-toggle"></span>
+        <?php endif; ?>
+        <span class="special-nav-btn fa fa-filter js-special-toggle"></span>
+        <?php if (have_posts()) : ?>
+            <?php
+            // Start the loop.
+            while (have_posts()) : the_post();
 
-            <?php if (have_posts()) : while (have_posts()) : the_post(); ?>
+                /*
+                 * Include the Post-Format-specific template for the content.
+                 * If you want to override this in a child theme, then include a file
+                 * called content-___.php (where ___ is the Post Format name) and that will be used instead.
+                 */
+                get_template_part('content', get_post_format());
 
-                <article id="post-<?php the_ID(); ?>" <?php post_class( 'article' ); ?> role="article">
-                    <header class="article__header">
-                        <h1 class="article__title">
-                            <?php the_title(); ?>
-                        </h1>
-                    </header>
+                // End the loop.
+            endwhile;
 
-                    <section class="article__content">
-                        <?php the_content(); ?>
-                    </section>
+// Previous/next page navigation.
+            the_posts_pagination(array(
+                'prev_text' => __('Previous page', 'weddly'),
+                'next_text' => __('Next page', 'weddly'),
+                'before_page_number' => '<span class="meta-nav screen-reader-text">' . __('Page', 'weddly') . ' </span>',
+            ));
 
-                    <footer class="article__footer">
-                        <p class="footer-comment-count">
-                            <?php comments_number( __( '<span>No</span> Comments', 'bonestheme' ), __( '<span>One</span> Comment', 'bonestheme' ), __( '<span>%</span> Comments', 'bonestheme' ) );?>
-                        </p>
+        // If no content, include the "No posts found" template.
+        else :
+            get_template_part('content', 'none');
 
-
-                        <?php printf( '<p class="footer-category">' . __('filed under', 'bonestheme' ) . ': %1$s</p>' , get_the_category_list(', ') ); ?>
-
-                        <?php the_tags( '<p class="footer-tags tags"><span class="tags-title">' . __( 'Tags:', 'bonestheme' ) . '</span> ', ', ', '</p>' ); ?>
-
-
-                    </footer>
-                </article>
-
-            <?php endwhile; ?>
-
-            <?php else : ?>
-
-                <article id="post-not-found" class="hentry cf">
-                    <header class="article-header">
-                        <h1><?php _e( 'Oops, Post Not Found!', 'bonestheme' ); ?></h1>
-                    </header>
-                    <section class="entry-content">
-                        <p><?php _e( 'Uh Oh. Something is missing. Try double checking things.', 'bonestheme' ); ?></p>
-                    </section>
-                    <footer class="article-footer">
-                        <p><?php _e( 'This is the error message in the index.php template.', 'bonestheme' ); ?></p>
-                    </footer>
-                </article>
-
-            <?php endif; ?>
+        endif;
+        ?>
 
 
-        </div> <?php // .container ?>
-    </main>
-    <?php get_sidebar(); ?>
+    </div> <?php // .container ?>
+</main>
+<?php get_sidebar(); ?>
 
 <?php get_footer(); ?>

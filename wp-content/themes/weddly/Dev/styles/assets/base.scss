@@ -17,6 +17,7 @@ body {
 .main-wrapper{
   background: $c_white;
   padding-top: $borderWidth*4;
+  box-shadow: 0 0 $borderWidth*4 $c_silver;
 }
 
 

@@ -12,7 +12,7 @@
   bottom: 0;
   right: 0;
   z-index: 0;
-  width: 256px;
+  width: 180px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   display: none;
@@ -35,7 +35,7 @@
 }
 
 .main-navigation{
-  background: $c_lavenderFog;
+  background: $c_white;
 
   a{
 
@@ -54,7 +54,7 @@
 }
 
 .main-nav-btn{
-  color: $c_lavenderFog;
+  color: darken($c_silver, 30%);
   font-size: 1.5rem;
   position: absolute;
   top: $borderWidth*2;
@@ -66,12 +66,14 @@
 
 .special-navigation{
   left: auto;
-  background: $c_lavenderFog;
+  background: $c_white;
+  width: 256px;
+
 }
 
 
 .special-nav-btn{
-  color: $c_lavenderFog;
+  color: darken($c_silver, 30%);
   font-size: 1.5rem;
   position: absolute;
   top: $borderWidth*2;

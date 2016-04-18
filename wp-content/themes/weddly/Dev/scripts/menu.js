@@ -5,7 +5,7 @@ $(function () {
     var mainMenu = new Slideout({
         'panel': $('.main-wrapper')[0],
         'menu': $('.main-navigation')[0],
-        'padding': 256,
+        'padding': 180,
         'tolerance': 70
     });
 
