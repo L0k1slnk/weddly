@@ -23,7 +23,7 @@ else{
 
     if ( !is_single() ) {
 
-//        twentyfifteen_post_thumbnail();
+        weddly_post_thumbnail();
 
     }
     ?>

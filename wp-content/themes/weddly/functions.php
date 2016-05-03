@@ -1,23 +1,23 @@
 <?php
 
 
-add_action( 'after_setup_theme', function(){
+add_action('after_setup_theme', function () {
     /*
 	 * Switch default core markup for search form, comment form, and comments
 	 * to output valid HTML5.
 	 */
-    add_theme_support( 'html5', array(
+    add_theme_support('html5', array(
         'search-form', 'comment-form', 'comment-list', 'gallery', 'caption'
-    ) );
+    ));
 
     /*
      * Enable support for Post Formats.
      *
      * See: https://codex.wordpress.org/Post_Formats
      */
-    add_theme_support( 'post-formats', array(
+    add_theme_support('post-formats', array(
         'aside', 'image', 'video', 'quote', 'link', 'gallery', 'status', 'audio', 'chat'
-    ) );
+    ));
 
 });
 
@@ -50,6 +50,17 @@ add_action('admin_head-edit-tags.php', function () {
         }
         return $terms;
     }, 10, 2);
+});
+// Remove “Category:”, “Tag:”, “Author:” from the_archive_title
+add_filter('get_the_archive_title', function ($title) {
+    if (is_category()) {
+        $title = single_cat_title('', false);
+    } elseif (is_tag()) {
+        $title = single_tag_title('', false);
+    } elseif (is_author()) {
+        $title = '<span class="vcard">' . get_the_author() . '</span>';
+    }
+    return $title;
 });
 
 // удаляем лишние RSS
@@ -86,11 +97,11 @@ register_nav_menus(array(
 //add_filter( 'image_send_to_editor', 'remove_width_attribute', 10 );
 //add_filter( 'the_content', 'remove_width_attribute', 10 );
 
-function remove_width_attribute( $html ) {
-    $html = preg_replace( '/(width|height)="\d*"\s/', "", $html );
+function remove_width_attribute($html)
+{
+    $html = preg_replace('/(width|height)="\d*"\s/', "", $html);
     return $html;
 }
-
 
 
 //img_caption_shortcode
@@ -98,31 +109,31 @@ function remove_width_attribute( $html ) {
 //caption
 
 
-
-function figure_layout( $empty, $attr, $content ){
-    if(is_single()){
-        $attr = shortcode_atts( array(
-            'id'      => '',
-            'align'   => 'alignnone',
-            'width'   => '',
+function figure_layout($empty, $attr, $content)
+{
+    if (is_single()) {
+        $attr = shortcode_atts(array(
+            'id' => '',
+            'align' => 'alignnone',
+            'width' => '',
             'caption' => ''
-        ), $attr );
+        ), $attr);
 
-        if ( 1 > (int) $attr['width'] || empty( $attr['caption'] ) ) {
+        if (1 > (int)$attr['width'] || empty($attr['caption'])) {
             return '';
         }
 
-        if ( $attr['id'] ) {
-            $attr['id'] = 'id="' . esc_attr( $attr['id'] ) . '" ';
+        if ($attr['id']) {
+            $attr['id'] = 'id="' . esc_attr($attr['id']) . '" ';
         }
         preg_match('/height=.(\d*)/', $content, $h);
         preg_match('/width=.(\d*)/', $content, $w);
-        preg_match( '/src="([^"]*)"/i', $content, $s ) ;
-        preg_match( '/alt="([^"]*)"/i', $content, $a ) ;
+        preg_match('/src="([^"]*)"/i', $content, $s);
+        preg_match('/alt="([^"]*)"/i', $content, $a);
 //    $content = preg_replace( '/(width|height)=\"\d*\"\s/', "", $content );
 
-        return '<figure itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject" ' . $attr['id'] .'class="gallery__item"><a href="'.$s[1].'" itemprop="contentUrl" data-size="'.$w[1].'x'.$h[1].'" data-width="'.$w[1].'" data-height="'.$h[1].'" class="gallery__item__link">'
-        . '<img src="'.$s[1].'" alt="'.$a[1].'" class="gallery__item__img">'
+        return '<figure itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject" ' . $attr['id'] . 'class="gallery__item"><a href="' . $s[1] . '" itemprop="contentUrl" data-size="' . $w[1] . 'x' . $h[1] . '" data-width="' . $w[1] . '" data-height="' . $h[1] . '" class="gallery__item__link">'
+        . '<img src="' . $s[1] . '" alt="' . $a[1] . '" class="gallery__item__img">'
         . '</a><figcaption class="gallery__image__caption">' . $attr['caption'] . '</figcaption>'
         . '</figure>';
     }
@@ -130,26 +141,56 @@ function figure_layout( $empty, $attr, $content ){
 }
 
 
-function changeImageOnFigure( $content )
+function changeImageOnFigure($content)
 {
-    if(is_single()){
+//    if (is_single() || is_front_page()) {
         $content = preg_replace(
-            '/<p>\s*?<a.*?>\s*?<img.+?(src="([^"]*)".*?)(alt="([^"]*)".*?)(width="([^"]*)".*?)(height="([^"]*)".*?)>\s*?<\/a>\s*?<\/p>/s',
+            '/<a.*?>\s*?<img.+?(src="([^"]*)".*?)(alt="([^"]*)".*?)(width="([^"]*)".*?)(height="([^"]*)".*?)>\s*?<\/a>/s',
             '<figure itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject" class="gallery__item"><a href="$2" itemprop="contentUrl" data-size="$6x$8" data-width="$6" data-height="$8" class="gallery__item__link"><img src="$2" alt="$4" class="gallery__item__img"></a></figure>',
             $content
         );
-        $content = preg_replace(
-            '/<p>\s*?<img.+?(src="([^"]*)".*?)(alt="([^"]*)".*?)(width="([^"]*)".*?)(height="([^"]*)".*?)>\s*?<\/p>/s',
-            '<figure itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject" class="gallery__item"><a href="$2" itemprop="contentUrl" data-size="$6x$8" data-width="$6" data-height="$8" class="gallery__item__link"><img src="$2" alt="$4" class="gallery__item__img"></a></figure>',
-            $content
-        );
+//        $content = preg_replace(
+//            '/<p>\s*?<img.+?(src="([^"]*)".*?)(alt="([^"]*)".*?)(width="([^"]*)".*?)(height="([^"]*)".*?)>\s*?<\/p>/s',
+//            '<figure itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject" class="gallery__item"><a href="$2" itemprop="contentUrl" data-size="$6x$8" data-width="$6" data-height="$8" class="gallery__item__link"><img src="$2" alt="$4" class="gallery__item__img"></a></figure>',
+//            $content
+//        );
         return $content;
-    }
+//    }
+//    return $content;
 
 }
 
 
+add_filter('img_caption_shortcode', 'figure_layout', 10, 3);
+add_filter('the_content', 'changeImageOnFigure', 99);
+add_filter('get_the_archive_description', 'changeImageOnFigure', 99);
 
-    add_filter( 'img_caption_shortcode', 'figure_layout', 10, 3 );
-    add_filter( 'the_content', 'changeImageOnFigure', 99 );
 
+if (!function_exists('weddly_post_thumbnail')) :
+
+    function weddly_post_thumbnail()
+    {
+        if (post_password_required() || is_attachment() || !has_post_thumbnail()) {
+            return;
+        }
+
+        if (is_singular()) :
+            ?>
+
+            <div class="post-thumbnail">
+                <?php the_post_thumbnail(); ?>
+            </div><!-- .post-thumbnail -->
+
+        <?php else : ?>
+
+            <a class="post-thumbnail" href="<?php the_permalink(); ?>" aria-hidden="true">
+                <?php
+                the_post_thumbnail('post-thumbnail', array('alt' => get_the_title()));
+                ?>
+            </a>
+
+        <?php endif; // End is_singular()
+    }
+endif;
+
+add_theme_support('category-thumbnails');

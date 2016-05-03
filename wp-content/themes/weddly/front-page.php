@@ -7,10 +7,14 @@
         <?php endif; ?>
         <span class="special-nav-btn fa fa-filter js-special-toggle"></span>
         <?php
-        if ( function_exists('yoast_breadcrumb') ) {
-            yoast_breadcrumb('<nav class="breadcrumbs">','</nav>');
+        if ( 'posts' == get_option( 'show_on_front' ) ) {
+            $content = get_post_format();
+        }
+        else{
+            $content = 'page';
         }
         ?>
+
         <?php if (have_posts()) : ?>
             <?php
             // Start the loop.
@@ -21,7 +25,8 @@
                  * If you want to override this in a child theme, then include a file
                  * called content-___.php (where ___ is the Post Format name) and that will be used instead.
                  */
-                get_template_part('content', get_post_format());
+
+                get_template_part('content', $content);
 
                 // End the loop.
             endwhile;
